@@ -2,39 +2,64 @@
   "config": {
     "step": {
       "user": {
-        "description": "Configure the Green Button integration.",
+        "description": "Configure the Green Button integration by pasting an ESPI (Green Button) Atom XML export. The XML must contain exactly one UsagePoint.",
         "data": {
           "name": "[%key:common::config_flow::data::name%]",
-          "usage_point_href": "UsagePoint HREF",
-          "energy_unit": "Energy Unit",
-          "cost_currency": "Cost Currency",
-          "xml": "XML"
+          "xml": "ESPI XML"
+        },
+        "data_description": {
+          "name": "A friendly name for this usage point (for example, your home or a specific meter).",
+          "xml": "The contents of the Green Button / ESPI Atom XML export downloaded from your utility."
         }
       }
     },
     "error": {
       "invalid_espi_xml": "Invalid ESPI XML.",
       "no_usage_points_found": "No UsagePoints found in the XML. You need exactly one.",
-      "multiple_usage_points_found": "Multiple UsagePoints found in the XML. You need exactly one.",
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
+      "multiple_usage_points_found": "Multiple UsagePoints found in the XML. You need exactly one."
     },
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "description": "",
-        "data": {
-          "name": "[%key:component::green_button::config::step::user::data::name%]",
-          "usage_point_href": "[%key:component::green_button::config::step::user::data::usage_point_href%]",
-          "energy_unit": "[%key:component::green_button::config::step::user::data::energy_unit%]",
-          "cost_currency": "[%key:component::green_button::config::step::user::data::cost_currency%]"
+  "services": {
+    "import_espi_xml": {
+      "name": "Import ESPI XML",
+      "description": "Imports usage data from an XML string containing the ESPI Atom format.",
+      "fields": {
+        "xml": {
+          "name": "XML",
+          "description": "The XML document to import."
         }
       }
+    },
+    "delete_statistics": {
+      "name": "Delete statistics",
+      "description": "Deletes a Green Button long-term statistic.",
+      "fields": {
+        "statistic_id": {
+          "name": "Statistic ID",
+          "description": "The ID of the statistic to clear. Must start with `green_button:`."
+        }
+      }
+    },
+    "log_statistics": {
+      "name": "Log statistics",
+      "description": "Logs the recorded statistics for the selected entities over a time range (diagnostic).",
+      "fields": {
+        "start": {
+          "name": "Start",
+          "description": "The start of the time range to log."
+        },
+        "end": {
+          "name": "End",
+          "description": "The end of the time range to log."
+        }
+      }
+    },
+    "reset": {
+      "name": "Reset",
+      "description": "Resets the selected entities and clears their long-term statistics."
     }
   }
 }

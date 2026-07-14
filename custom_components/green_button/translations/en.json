@@ -4,36 +4,62 @@
       "already_configured": "Device is already configured"
     },
     "error": {
-      "cannot_connect": "Failed to connect",
-      "invalid_auth": "Invalid authentication",
       "invalid_espi_xml": "Invalid ESPI XML.",
       "multiple_usage_points_found": "Multiple UsagePoints found in the XML. You need exactly one.",
-      "no_usage_points_found": "No UsagePoints found in the XML. You need exactly one.",
-      "unknown": "Unexpected error"
+      "no_usage_points_found": "No UsagePoints found in the XML. You need exactly one."
     },
     "step": {
       "user": {
+        "description": "Configure the Green Button integration by pasting an ESPI (Green Button) Atom XML export. The XML must contain exactly one UsagePoint.",
         "data": {
-          "cost_currency": "Cost Currency",
-          "energy_unit": "Energy Unit",
           "name": "Name",
-          "usage_point_href": "UsagePoint HREF",
-          "xml": "XML"
+          "xml": "ESPI XML"
+        },
+        "data_description": {
+          "name": "A friendly name for this usage point (for example, your home or a specific meter).",
+          "xml": "The contents of the Green Button / ESPI Atom XML export downloaded from your utility."
         }
       }
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "data": {
-          "cost_currency": "Cost Currency",
-          "energy_unit": "Energy Unit",
-          "name": "Name",
-          "usage_point_href": "UsagePoint HREF"
-        },
-        "description": ""
+  "services": {
+    "import_espi_xml": {
+      "name": "Import ESPI XML",
+      "description": "Imports usage data from an XML string containing the ESPI Atom format.",
+      "fields": {
+        "xml": {
+          "name": "XML",
+          "description": "The XML document to import."
+        }
       }
+    },
+    "delete_statistics": {
+      "name": "Delete statistics",
+      "description": "Deletes a Green Button long-term statistic.",
+      "fields": {
+        "statistic_id": {
+          "name": "Statistic ID",
+          "description": "The ID of the statistic to clear. Must start with `green_button:`."
+        }
+      }
+    },
+    "log_statistics": {
+      "name": "Log statistics",
+      "description": "Logs the recorded statistics for the selected entities over a time range (diagnostic).",
+      "fields": {
+        "start": {
+          "name": "Start",
+          "description": "The start of the time range to log."
+        },
+        "end": {
+          "name": "End",
+          "description": "The end of the time range to log."
+        }
+      }
+    },
+    "reset": {
+      "name": "Reset",
+      "description": "Resets the selected entities and clears their long-term statistics."
     }
   }
 }

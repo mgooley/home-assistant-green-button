@@ -3,13 +3,13 @@
 Based on the Energy Services Provider Interface (ESPI) Atom feed defined by the
 North American Energy Standards Board.
 """
+
 from __future__ import annotations
 
+from collections.abc import Collection, Sequence
 import dataclasses
 import datetime
 import functools
-from collections.abc import Collection
-from collections.abc import Sequence
 from typing import final
 
 from homeassistant.components import sensor

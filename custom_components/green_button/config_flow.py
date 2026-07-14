@@ -1,27 +1,25 @@
 """Config flow for Green Button integration."""
+
 from __future__ import annotations
 
 import logging
 from typing import Any
 
-from homeassistant import config_entries
-from homeassistant import data_entry_flow
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 
-from . import configs
-from . import const
-from . import state
+from . import configs, const, state
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
+class GreenButtonConfigFlow(ConfigFlow, domain=const.DOMAIN):
     """Handle a config flow for Green Button."""
 
     VERSION = 1
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> data_entry_flow.FlowResult:
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         await state.async_ensure_setup(self.hass)
 
@@ -36,21 +34,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
         try:
             config = configs.ComponentConfig.from_mapping(user_input)
         except configs.InvalidUserInputError as ex:
-            _LOGGER.info("Invalid user input", exc_info=True)
+            _LOGGER.debug("Invalid user input", exc_info=True)
             return self.async_show_form(
                 step_id=step_id,
                 data_schema=schema,
                 errors=ex.errors,
             )
 
-        if await self.async_set_unique_id(config.unique_id) is not None:
-            _LOGGER.info(
-                "A ConfigEntry with the unique ID %r is already configured",
-                config.unique_id,
-            )
-            return self.async_abort(reason="already_configured")
+        await self.async_set_unique_id(config.unique_id)
+        self._abort_if_unique_id_configured()
 
-        _LOGGER.info("Created config with unique ID %r", config.unique_id)
+        _LOGGER.debug("Created config with unique ID %r", config.unique_id)
         config.set_side_channels(self.hass)
         return self.async_create_entry(
             title=config.name,

@@ -1,35 +1,30 @@
 """A module containing the component's service implementations."""
+
 from __future__ import annotations
 
 import abc
 import asyncio
+from collections.abc import Awaitable, Callable, Coroutine
 import dataclasses
 import datetime
 import enum
 import json
 import logging
 import re
-from collections.abc import Awaitable
-from collections.abc import Callable
-from collections.abc import Coroutine
-from typing import Any
-from typing import final
-from typing import Protocol
+from typing import Any, Protocol, final
 
-import voluptuous as vol
-from homeassistant.components.recorder import statistics
-from homeassistant.components.recorder import util as recorder_util
-from homeassistant.core import HomeAssistant
-from homeassistant.core import ServiceCall
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import entity as ha_entity
-from homeassistant.helpers import entity_platform
-from homeassistant.helpers import service
+from homeassistant.components.recorder import statistics, util as recorder_util
+from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.helpers import (
+    config_validation as cv,
+    entity as ha_entity,
+    entity_platform,
+    service,
+)
 from homeassistant.helpers.typing import ServiceDataType
+import voluptuous as vol
 
-from . import const
-from . import model
-from . import state
+from . import const, model, state
 from .parsers import espi
 
 _LOGGER = logging.getLogger(__name__)
@@ -108,7 +103,7 @@ class _DeleteStatisticsAction:
         )
 
     async def _import(self, usage_point: model.UsagePoint) -> None:
-        _LOGGER.info("Processing UsagePoint %r", usage_point.id)
+        _LOGGER.debug("Processing UsagePoint %r", usage_point.id)
         entry_state = state.get(self._hass).get_entry_state(usage_point.id)
         if entry_state is None:
             return
@@ -146,7 +141,7 @@ class _ImportEspiXmlAction:
         )
 
     async def _import(self, usage_point: model.UsagePoint) -> None:
-        _LOGGER.info("Processing UsagePoint %r", usage_point.id)
+        _LOGGER.debug("Processing UsagePoint %r", usage_point.id)
         entry_state = state.get(self._hass).get_entry_state(usage_point.id)
         if entry_state is None:
             return
@@ -165,7 +160,7 @@ class _ImportEspiXmlAction:
         usage_points = espi.parse_xml(xml)
 
         ids = [usage_point.id for usage_point in usage_points]
-        _LOGGER.info("Found %d UsagePoints with ids: %s", len(ids), ids)
+        _LOGGER.debug("Found %d UsagePoints with ids: %s", len(ids), ids)
 
         await asyncio.gather(
             *(self._import(usage_point) for usage_point in usage_points)
@@ -196,7 +191,7 @@ class Service:
         await self._async_register_service(_ImportEspiXmlAction.create_spec())
 
     @classmethod
-    async def async_create_and_register(cls, hass: HomeAssistant) -> "Service":
+    async def async_create_and_register(cls, hass: HomeAssistant) -> Service:
         """Create a new instance and registers it."""
         new_service = cls(hass)
         await new_service.async_register()
@@ -298,16 +293,16 @@ class _LogStatisticsAction(_EntityServiceAction):
                 units=None,
             )
 
-            _LOGGER.info("Hourly data: %s", json.dumps(data_hour))
-            _LOGGER.info("5m data: %s", json.dumps(data_5_min))
-            _LOGGER.info(
+            _LOGGER.debug("Hourly data: %s", json.dumps(data_hour))
+            _LOGGER.debug("5m data: %s", json.dumps(data_5_min))
+            _LOGGER.debug(
                 "%s to %s",
                 round_down_5m(start - datetime.timedelta.resolution),
                 round_down_5m(end),
             )
-            _LOGGER.info("5m data (modified): %s", json.dumps(data_5_min_mod))
-            _LOGGER.info("Single data: %s", json.dumps(data_single))
-            _LOGGER.info("Before data: %s", json.dumps(data_before))
+            _LOGGER.debug("5m data (modified): %s", json.dumps(data_5_min_mod))
+            _LOGGER.debug("Single data: %s", json.dumps(data_single))
+            _LOGGER.debug("Before data: %s", json.dumps(data_before))
 
         recorder_util.get_instance(self.hass).async_add_executor_job(action)
 
@@ -329,7 +324,7 @@ class _ResetEntityAction(_EntityServiceAction):
 def entity_service(
     func: Callable[
         [EntityService, state.GreenButtonEntity, ServiceCall], Awaitable[None]
-    ]
+    ],
 ) -> Callable[
     [EntityService, ha_entity.Entity, ServiceCall], Coroutine[Any, Any, None]
 ]:
@@ -393,7 +388,7 @@ class EntityService:
     @classmethod
     async def async_create_and_register(
         cls, hass: HomeAssistant, platform: entity_platform.EntityPlatform
-    ) -> "EntityService":
+    ) -> EntityService:
         """Create a new instance and registers it."""
         new_service = cls(hass, platform)
         await new_service.async_register()

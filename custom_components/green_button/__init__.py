@@ -1,4 +1,5 @@
 """The Green Button integration."""
+
 from __future__ import annotations
 
 import logging
@@ -16,7 +17,7 @@ PLATFORMS: list[Platform] = [Platform.NUMBER]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Green Button from a config entry."""
-    _LOGGER.info("Setting up ConfigEntry: %r", entry.unique_id)
+    _LOGGER.debug("Setting up ConfigEntry: %r", entry.unique_id)
 
     global_state = await state.async_ensure_setup(hass)
     await global_state.async_setup_entry(hass, entry)

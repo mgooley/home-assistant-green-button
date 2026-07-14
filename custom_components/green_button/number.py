@@ -1,4 +1,5 @@
 """Platform for creating a sensor containing the last known update."""
+
 from __future__ import annotations
 
 import asyncio
@@ -8,34 +9,30 @@ import enum
 import logging
 from typing import Final
 
-import slugify
 from homeassistant.components import number
 from homeassistant.components.recorder import util as recorder_util
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity
 from homeassistant.helpers import entity_platform
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import slugify
 
-from . import configs
-from . import const
-from . import model
-from . import state
-from . import statistics
+from . import configs, const, model, state, statistics
 
 _LOGGER = logging.getLogger(__name__)
 
 
 _MOST_RECENT_ENERGY_READING_NUMBER_DESCRIPTION = number.NumberEntityDescription(
     key="green_button_last_energy_reading",
-    entity_category=entity.EntityCategory.DIAGNOSTIC,
+    entity_category=EntityCategory.DIAGNOSTIC,
     native_step=1,
     icon="mdi:lightning-bolt",
 )
 
 _MOST_RECENT_COST_READING_NUMBER_DESCRIPTION = number.NumberEntityDescription(
     key="green_button_most_recent_cost_reading",
-    entity_category=entity.EntityCategory.DIAGNOSTIC,
+    entity_category=EntityCategory.DIAGNOSTIC,
     native_step=float(10**-5),  # Hundred thousandth
     icon="mdi:cash",
 )
@@ -101,7 +98,7 @@ class _GreenButtonNumber(number.RestoreNumber):
         self._attr_should_poll = False
         self._attr_assumed_state = True
         self._attr_native_unit_of_measurement = variant.get_unit_of_measurement(config)
-        long_term_stats_id = slugify.slugify(name, separator="_")
+        long_term_stats_id = slugify(name, separator="_")
         self._attr_extra_state_attributes = {
             self._METER_READING_ID_ATTR: config.id,
             self._LONG_TERM_STATISTICS_ID_ATTR: f"{const.DOMAIN}:{long_term_stats_id}",
@@ -184,7 +181,7 @@ class _GreenButtonNumber(number.RestoreNumber):
 
     async def async_will_remove_from_hass(self) -> None:
         stats_to_clear = [self.entity_id, self.long_term_statistics_id]
-        _LOGGER.info("[%s] Clearing statistics: %s", self.entity_id, stats_to_clear)
+        _LOGGER.debug("[%s] Clearing statistics: %s", self.entity_id, stats_to_clear)
         recorder_util.get_instance(self.hass).async_clear_statistics(stats_to_clear)
 
     def set_native_value(self, value: float) -> None:
@@ -196,7 +193,7 @@ class _GreenButtonNumber(number.RestoreNumber):
         if last_reported is not None and last_reported >= newest_reading.end:
             return
         native_value = float(self._variant.get_native_value(newest_reading))
-        _LOGGER.info(
+        _LOGGER.debug(
             "[%s] Updating state for entity to %s", self.entity_id, native_value
         )
         if (
@@ -242,7 +239,9 @@ class _GreenButtonNumber(number.RestoreNumber):
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Configure sensors for the ConfigEntry."""
     platform = entity_platform.async_get_current_platform()
@@ -260,10 +259,10 @@ async def async_setup_entry(
     config = configs.ComponentConfig.from_entry(hass, entry)
     entities = []
     for i, meter_reading_config in enumerate(config.meter_reading_configs):
-        _LOGGER.info(
+        _LOGGER.debug(
             "Setting up sensors for meter reading: %r", meter_reading_config.id
         )
-        name_prefix = f"{config.name} {i+1}"
+        name_prefix = f"{config.name} {i + 1}"
         if meter_reading_config.id.startswith(config.unique_id):
             meter_reading_suffix = meter_reading_config.id[len(config.unique_id) :]
             if meter_reading_suffix.startswith("/"):

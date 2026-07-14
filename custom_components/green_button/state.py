@@ -1,23 +1,18 @@
 """A module defining classes that store the component's runtime state."""
+
 from __future__ import annotations
 
+from collections.abc import Collection, MutableMapping, MutableSequence
 import dataclasses
 import typing
-from collections.abc import Collection
-from collections.abc import MutableMapping
-from collections.abc import MutableSequence
-from typing import Protocol
-from typing import runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 
-from . import const
-from . import model
-from . import services
-from . import side_channel
+from . import const, model, services, side_channel
 
 
 class PlatformState(Protocol):
@@ -110,7 +105,7 @@ class NumberPlatformState:
         hass: HomeAssistant,
         entry: ConfigEntry,
         platform: entity_platform.EntityPlatform,
-    ) -> "NumberPlatformState":
+    ) -> NumberPlatformState:
         """Create a new instance."""
         return cls(
             service=await services.EntityService.async_create_and_register(
@@ -140,7 +135,7 @@ class EntryState:
         return platform_state
 
     @classmethod
-    async def create(cls, hass: HomeAssistant, entry: ConfigEntry) -> "EntryState":
+    async def create(cls, hass: HomeAssistant, entry: ConfigEntry) -> EntryState:
         """Create a new instance."""
         return cls(platform_states={})
 
@@ -177,7 +172,7 @@ class State:
         self.entry_states.pop(unique_id)
 
     @classmethod
-    async def create(cls, hass: HomeAssistant) -> "State":
+    async def create(cls, hass: HomeAssistant) -> State:
         """Create a new instance."""
         return cls(
             service=await services.Service.async_create_and_register(hass),

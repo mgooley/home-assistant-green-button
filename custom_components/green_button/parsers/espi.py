@@ -1,8 +1,8 @@
 """Module containing parsers for the Energy Services Provider Interface (ESPI) Atom feed defined by the North American Energy Standards Board."""
-import datetime
+
 from collections.abc import Callable
-from typing import Final
-from typing import TypeVar
+import datetime
+from typing import Final, TypeVar
 from xml.etree import ElementTree as ET
 
 from defusedxml import ElementTree as defusedET
@@ -83,7 +83,7 @@ def _parse_child_elems(
 
 
 def _to_utc_datetime(timestamp: str) -> datetime.datetime:
-    return datetime.datetime.fromtimestamp(int(timestamp), datetime.timezone.utc)
+    return datetime.datetime.fromtimestamp(int(timestamp), datetime.UTC)
 
 
 def _to_timedelta(duration: str) -> datetime.timedelta:
@@ -97,7 +97,7 @@ class GreenButtonFeed:
         """Create a new instance."""
         self._xml = xml
 
-    def find_entries(self, entry_type_tag: str) -> list["EspiEntry"]:
+    def find_entries(self, entry_type_tag: str) -> list[EspiEntry]:
         """Find all atom entries whose root data tag has the specified name."""
         return [
             EspiEntry(self, elem, entry_type_tag)
@@ -159,7 +159,7 @@ class EspiEntry:
         return _parse_child_elems(self._elem, xpath, parser)
 
     def find_related_entries(
-        self, related_entry_type_tag: str, parser: Callable[["EspiEntry"], T]
+        self, related_entry_type_tag: str, parser: Callable[[EspiEntry], T]
     ) -> list[T]:
         """Find all related entries whose root data tag has the specified name."""
         related_hrefs = self.find_related_hrefs()
@@ -171,7 +171,7 @@ class EspiEntry:
         return matches
 
     def find_first_related_entries(
-        self, related_entry_type_tag: str, parser: Callable[["EspiEntry"], T]
+        self, related_entry_type_tag: str, parser: Callable[[EspiEntry], T]
     ) -> T:
         """Find the first related entry whose root data tag has the specified name."""
         matches = self.find_related_entries(related_entry_type_tag, parser)
@@ -203,7 +203,7 @@ class EspiEntry:
 
     def create_interval_block_parser(
         self, reading_type: model.ReadingType
-    ) -> Callable[["EspiEntry"], model.IntervalBlock]:
+    ) -> Callable[[EspiEntry], model.IntervalBlock]:
         """Create an IntervalBlock parser for the ReadingType."""
 
         def parser(entry: EspiEntry) -> model.IntervalBlock:
