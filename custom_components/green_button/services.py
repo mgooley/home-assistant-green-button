@@ -108,7 +108,7 @@ class _DeleteStatisticsAction:
         )
 
     async def _import(self, usage_point: model.UsagePoint) -> None:
-        _LOGGER.info("Processing UsagePoint %r", usage_point.id)
+        _LOGGER.debug("Processing UsagePoint %r", usage_point.id)
         entry_state = state.get(self._hass).get_entry_state(usage_point.id)
         if entry_state is None:
             return
@@ -146,7 +146,7 @@ class _ImportEspiXmlAction:
         )
 
     async def _import(self, usage_point: model.UsagePoint) -> None:
-        _LOGGER.info("Processing UsagePoint %r", usage_point.id)
+        _LOGGER.debug("Processing UsagePoint %r", usage_point.id)
         entry_state = state.get(self._hass).get_entry_state(usage_point.id)
         if entry_state is None:
             return
@@ -165,7 +165,7 @@ class _ImportEspiXmlAction:
         usage_points = espi.parse_xml(xml)
 
         ids = [usage_point.id for usage_point in usage_points]
-        _LOGGER.info("Found %d UsagePoints with ids: %s", len(ids), ids)
+        _LOGGER.debug("Found %d UsagePoints with ids: %s", len(ids), ids)
 
         await asyncio.gather(
             *(self._import(usage_point) for usage_point in usage_points)
@@ -298,16 +298,16 @@ class _LogStatisticsAction(_EntityServiceAction):
                 units=None,
             )
 
-            _LOGGER.info("Hourly data: %s", json.dumps(data_hour))
-            _LOGGER.info("5m data: %s", json.dumps(data_5_min))
-            _LOGGER.info(
+            _LOGGER.debug("Hourly data: %s", json.dumps(data_hour))
+            _LOGGER.debug("5m data: %s", json.dumps(data_5_min))
+            _LOGGER.debug(
                 "%s to %s",
                 round_down_5m(start - datetime.timedelta.resolution),
                 round_down_5m(end),
             )
-            _LOGGER.info("5m data (modified): %s", json.dumps(data_5_min_mod))
-            _LOGGER.info("Single data: %s", json.dumps(data_single))
-            _LOGGER.info("Before data: %s", json.dumps(data_before))
+            _LOGGER.debug("5m data (modified): %s", json.dumps(data_5_min_mod))
+            _LOGGER.debug("Single data: %s", json.dumps(data_single))
+            _LOGGER.debug("Before data: %s", json.dumps(data_before))
 
         recorder_util.get_instance(self.hass).async_add_executor_job(action)
 

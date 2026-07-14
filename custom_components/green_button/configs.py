@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import dataclasses
 from collections.abc import Mapping
+from enum import StrEnum
 from typing import Any
 from typing import Final
 from typing import final
 
 import voluptuous as vol
-from homeassistant.backports import enum as backports_enum
 from homeassistant.components import sensor
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -28,7 +28,7 @@ class InvalidUserInputError(ValueError):
         self.errors = errors
 
 
-class _MeterReadingConfigField(backports_enum.StrEnum):
+class _MeterReadingConfigField(StrEnum):
     ID: Final = "id"
     SENSOR_DEVICE_CLASS: Final = "sensor_device_class"
     UNIT_OF_MEASUREMENT: Final = "unit_of_measurement"

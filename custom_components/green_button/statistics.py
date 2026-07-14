@@ -729,7 +729,7 @@ class _UpdateStatisticsTask:
     async def _update_for_interval_block(
         self, interval_block: _MergedIntervalBlock
     ) -> None:
-        _LOGGER.info(
+        _LOGGER.debug(
             "[%s] Processing %d IntervalReadings for merged IntervalBlock from '%s' to '%s'",
             self._statistic_id,
             len(interval_block.interval_readings),
@@ -740,7 +740,7 @@ class _UpdateStatisticsTask:
         await self._update_statistics(interval_block, "5minute")
 
     async def __call__(self) -> None:
-        _LOGGER.info("[%s] Updating statistics for entity", self._statistic_id)
+        _LOGGER.debug("[%s] Updating statistics for entity", self._statistic_id)
         merged_blocks = _merge_interval_blocks(self._meter_reading.interval_blocks)
         for block in merged_blocks:
             if not _is_aligned(block.end, "hour"):
@@ -749,7 +749,7 @@ class _UpdateStatisticsTask:
                 )
         for block in merged_blocks:
             await self._update_for_interval_block(block)
-        _LOGGER.info("[%s] Statistics update complete", self._statistic_id)
+        _LOGGER.debug("[%s] Statistics update complete", self._statistic_id)
 
     @classmethod
     def create(

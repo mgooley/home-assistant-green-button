@@ -1,90 +1,99 @@
 """Test the Green Button config flow."""
+from __future__ import annotations
+
 from unittest.mock import patch
 
 from homeassistant import config_entries
-from homeassistant.components.green_button.config_flow import CannotConnect
-from homeassistant.components.green_button.config_flow import InvalidAuth
-from homeassistant.components.green_button.const import DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.green_button.const import DOMAIN
+
+from .const import EMPTY_FEED_XML
+from .const import INVALID_XML
+from .const import VALID_ESPI_XML
+from .const import VALID_USAGE_POINT_ID
 
 
-async def test_form(hass: HomeAssistant) -> None:
-    """Test we get the form."""
+async def test_form_shows(hass: HomeAssistant) -> None:
+    """The initial step shows the user form with no errors."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == FlowResultType.FORM
-    assert result["errors"] is None
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+    assert not result["errors"]
+
+
+async def test_form_creates_entry(hass: HomeAssistant) -> None:
+    """Valid ESPI XML creates a config entry."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
 
     with patch(
-        "homeassistant.components.green_button.config_flow.PlaceholderHub.authenticate",
-        return_value=True,
-    ), patch(
-        "homeassistant.components.green_button.async_setup_entry",
+        "custom_components.green_button.async_setup_entry",
         return_value=True,
     ) as mock_setup_entry:
-        result2 = await hass.config_entries.flow.async_configure(
+        result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
-            {
-                "host": "1.1.1.1",
-                "username": "test-username",
-                "password": "test-password",
-            },
+            {"name": "Home", "xml": VALID_ESPI_XML},
         )
         await hass.async_block_till_done()
 
-    assert result2["type"] == FlowResultType.CREATE_ENTRY
-    assert result2["title"] == "Name of the device"
-    assert result2["data"] == {
-        "host": "1.1.1.1",
-        "username": "test-username",
-        "password": "test-password",
-    }
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["title"] == "Home"
+    assert result["result"].unique_id == VALID_USAGE_POINT_ID
     assert len(mock_setup_entry.mock_calls) == 1
 
 
-async def test_form_invalid_auth(hass: HomeAssistant) -> None:
-    """Test we handle invalid auth."""
+async def test_form_invalid_xml(hass: HomeAssistant) -> None:
+    """Malformed XML re-shows the form with an error."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
 
-    with patch(
-        "homeassistant.components.green_button.config_flow.PlaceholderHub.authenticate",
-        side_effect=InvalidAuth,
-    ):
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
-            {
-                "host": "1.1.1.1",
-                "username": "test-username",
-                "password": "test-password",
-            },
-        )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {"name": "Home", "xml": INVALID_XML},
+    )
 
-    assert result2["type"] == FlowResultType.FORM
-    assert result2["errors"] == {"base": "invalid_auth"}
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"xml": "invalid_espi_xml"}
 
 
-async def test_form_cannot_connect(hass: HomeAssistant) -> None:
-    """Test we handle cannot connect error."""
+async def test_form_no_usage_points(hass: HomeAssistant) -> None:
+    """A feed without a UsagePoint re-shows the form with an error."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
 
-    with patch(
-        "homeassistant.components.green_button.config_flow.PlaceholderHub.authenticate",
-        side_effect=CannotConnect,
-    ):
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
-            {
-                "host": "1.1.1.1",
-                "username": "test-username",
-                "password": "test-password",
-            },
-        )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {"name": "Home", "xml": EMPTY_FEED_XML},
+    )
 
-    assert result2["type"] == FlowResultType.FORM
-    assert result2["errors"] == {"base": "cannot_connect"}
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"xml": "no_usage_points_found"}
+
+
+async def test_form_already_configured(hass: HomeAssistant) -> None:
+    """A UsagePoint that is already configured aborts the flow."""
+    MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=VALID_USAGE_POINT_ID,
+        data={},
+    ).add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {"name": "Home", "xml": VALID_ESPI_XML},
+    )
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"

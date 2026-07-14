@@ -1,7 +1,13 @@
 {
-  "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true,
-  "python.pythonPath": "venv/bin/python",
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
   "files.associations": {
     "*.yaml": "home-assistant"
   }
