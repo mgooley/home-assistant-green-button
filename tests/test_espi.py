@@ -1,17 +1,16 @@
 """Tests for the ESPI Atom feed parser."""
+
 from __future__ import annotations
 
 import datetime
 
-import pytest
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import UnitOfEnergy
+import pytest
 
 from custom_components.green_button.parsers import espi
 
-from .const import INVALID_XML
-from .const import VALID_ESPI_XML
-from .const import VALID_USAGE_POINT_ID
+from .const import INVALID_XML, VALID_ESPI_XML, VALID_USAGE_POINT_ID
 
 
 def test_parse_valid_feed() -> None:
@@ -35,9 +34,7 @@ def test_parse_valid_feed() -> None:
     assert reading.value == 100
     assert reading.cost == 1000
     assert reading.duration == datetime.timedelta(hours=1)
-    assert reading.start == datetime.datetime(
-        2021, 1, 1, tzinfo=datetime.timezone.utc
-    )
+    assert reading.start == datetime.datetime(2021, 1, 1, tzinfo=datetime.UTC)
 
 
 def test_parse_invalid_xml_raises() -> None:

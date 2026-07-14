@@ -1,30 +1,26 @@
 """A module defining calculators for statistics."""
+
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable, Sequence
 import dataclasses
 import datetime
 import decimal
 import logging
-from collections.abc import Callable
-from collections.abc import Sequence
-from typing import Any
-from typing import final
-from typing import Literal
-from typing import Protocol
-from typing import TypeVar
+from typing import Any, Literal, Protocol, TypeVar, final
 
 from homeassistant import exceptions
 from homeassistant.components import recorder
-from homeassistant.components.recorder import db_schema as recorder_db_schema
-from homeassistant.components.recorder import statistics
-from homeassistant.components.recorder import tasks
-from homeassistant.components.recorder import util as recorder_util
+from homeassistant.components.recorder import (
+    db_schema as recorder_db_schema,
+    statistics,
+    tasks,
+    util as recorder_util,
+)
 from homeassistant.core import HomeAssistant
 
-from . import const
-from . import model
-from . import state
+from . import const, model, state
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -185,7 +181,7 @@ def _merge_interval_blocks(
 
 
 def _to_table(
-    period: Literal["5minute", "hour"]
+    period: Literal["5minute", "hour"],
 ) -> type[recorder_db_schema.StatisticsShortTerm | recorder_db_schema.Statistics]:
     if period == "5minute":
         return recorder_db_schema.StatisticsShortTerm

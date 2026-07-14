@@ -1,15 +1,13 @@
 """Config flow for Green Button integration."""
+
 from __future__ import annotations
 
 import logging
 from typing import Any
 
-from homeassistant.config_entries import ConfigFlow
-from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 
-from . import configs
-from . import const
-from . import state
+from . import configs, const, state
 
 _LOGGER = logging.getLogger(__name__)
 

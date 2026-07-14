@@ -1,4 +1,5 @@
 """Test the Green Button config flow."""
+
 from __future__ import annotations
 
 from unittest.mock import patch
@@ -6,14 +7,18 @@ from unittest.mock import patch
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.green_button.const import DOMAIN
 
-from .const import EMPTY_FEED_XML
-from .const import INVALID_XML
-from .const import VALID_ESPI_XML
-from .const import VALID_USAGE_POINT_ID
+from .const import EMPTY_FEED_XML, INVALID_XML, VALID_ESPI_XML, VALID_USAGE_POINT_ID
+
+
+@pytest.fixture(autouse=True)
+def _enable_custom_integrations(enable_custom_integrations: None) -> None:
+    """Enable loading the custom integration for config flow tests."""
+    return
 
 
 async def test_form_shows(hass: HomeAssistant) -> None:

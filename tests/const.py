@@ -1,4 +1,5 @@
 """Shared constants and fixtures for Green Button tests."""
+
 from __future__ import annotations
 
 # A minimal-but-complete ESPI (Green Button) Atom feed containing exactly one

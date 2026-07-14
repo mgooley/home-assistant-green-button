@@ -1,4 +1,5 @@
 """Platform for creating a sensor containing the last known update."""
+
 from __future__ import annotations
 
 import asyncio
@@ -17,11 +18,7 @@ from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import slugify
 
-from . import configs
-from . import const
-from . import model
-from . import state
-from . import statistics
+from . import configs, const, model, state, statistics
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -265,7 +262,7 @@ async def async_setup_entry(
         _LOGGER.debug(
             "Setting up sensors for meter reading: %r", meter_reading_config.id
         )
-        name_prefix = f"{config.name} {i+1}"
+        name_prefix = f"{config.name} {i + 1}"
         if meter_reading_config.id.startswith(config.unique_id):
             meter_reading_suffix = meter_reading_config.id[len(config.unique_id) :]
             if meter_reading_suffix.startswith("/"):

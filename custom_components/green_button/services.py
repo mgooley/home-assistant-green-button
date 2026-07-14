@@ -1,35 +1,30 @@
 """A module containing the component's service implementations."""
+
 from __future__ import annotations
 
 import abc
 import asyncio
+from collections.abc import Awaitable, Callable, Coroutine
 import dataclasses
 import datetime
 import enum
 import json
 import logging
 import re
-from collections.abc import Awaitable
-from collections.abc import Callable
-from collections.abc import Coroutine
-from typing import Any
-from typing import final
-from typing import Protocol
+from typing import Any, Protocol, final
 
-import voluptuous as vol
-from homeassistant.components.recorder import statistics
-from homeassistant.components.recorder import util as recorder_util
-from homeassistant.core import HomeAssistant
-from homeassistant.core import ServiceCall
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import entity as ha_entity
-from homeassistant.helpers import entity_platform
-from homeassistant.helpers import service
+from homeassistant.components.recorder import statistics, util as recorder_util
+from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.helpers import (
+    config_validation as cv,
+    entity as ha_entity,
+    entity_platform,
+    service,
+)
 from homeassistant.helpers.typing import ServiceDataType
+import voluptuous as vol
 
-from . import const
-from . import model
-from . import state
+from . import const, model, state
 from .parsers import espi
 
 _LOGGER = logging.getLogger(__name__)
@@ -196,7 +191,7 @@ class Service:
         await self._async_register_service(_ImportEspiXmlAction.create_spec())
 
     @classmethod
-    async def async_create_and_register(cls, hass: HomeAssistant) -> "Service":
+    async def async_create_and_register(cls, hass: HomeAssistant) -> Service:
         """Create a new instance and registers it."""
         new_service = cls(hass)
         await new_service.async_register()
@@ -329,7 +324,7 @@ class _ResetEntityAction(_EntityServiceAction):
 def entity_service(
     func: Callable[
         [EntityService, state.GreenButtonEntity, ServiceCall], Awaitable[None]
-    ]
+    ],
 ) -> Callable[
     [EntityService, ha_entity.Entity, ServiceCall], Coroutine[Any, Any, None]
 ]:
@@ -393,7 +388,7 @@ class EntityService:
     @classmethod
     async def async_create_and_register(
         cls, hass: HomeAssistant, platform: entity_platform.EntityPlatform
-    ) -> "EntityService":
+    ) -> EntityService:
         """Create a new instance and registers it."""
         new_service = cls(hass, platform)
         await new_service.async_register()
